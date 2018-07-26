@@ -1,6 +1,7 @@
 from pyhik.constants import ( DEFAULT_PORT, DEFAULT_HEADERS,__version__ )
 
 import requests
+import encodings.idna
 
 try:
 	import xml.etree.cElementTree as ET
@@ -26,12 +27,16 @@ class HikEventNotification(object):
 	def alert_stream(self):
 
 		url = '{}/ISAPI/Event/notification/alertStream'.format(self.root_url)
-
+		# print(url)
 		while True:
 			try:
 				response = self.request.get(url, stream=True)
-
+				# print(response.status_code)
 			except requests.exceptions.RequestException as err:
+				return None
+
+			except Exception as err:
+				print('Error: ' + str(err))
 				return None
 
 			if response.status_code == requests.codes.bad_request: #400
@@ -59,7 +64,8 @@ class HikEventNotification(object):
 				parse_string = ""
 				for line in response.iter_lines():
 					if line:
-						str_line = line.decode('utf-8')
+						str_line = line.decode('utf-8',"ignore")
+						print(str_line)
 						if str_line.find('<EventNotificationAlert') != -1:
 							# Start of event message
 							start_event = True
@@ -68,6 +74,7 @@ class HikEventNotification(object):
 							# Message end found found
 							parse_string += str_line
 							start_event = False
+							# print(parse_string)
 							if parse_string:
 								tree = ET.fromstring(parse_string)
 								response_status = {}

@@ -67,6 +67,7 @@ class HikSystem(object):
 			return None
 
 		if response.status_code == requests.codes.unauthorized:
+			print('Error 401: Unauthorized')
 			return None
 
 		try:
